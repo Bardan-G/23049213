@@ -13,12 +13,12 @@ export class UsersController {
     addUser(@Body() body:{id: number, name: string}){
         return this.userService.addUser(body.id,body.name);
 
-    }
+    };
    
     @Delete(':id')
     deleteUser(@Param('id')id:string){
         return this.userService.deleteUser(Number(id))
-    }
+    };
    
    
     
