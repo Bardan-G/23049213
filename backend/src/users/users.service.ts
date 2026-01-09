@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { dot } from 'node:test/reporters';
 
 export class User {
     id:number;
@@ -14,6 +15,7 @@ export class UsersService {
     // constructor(private prisma :PrismaServices){}
     private users : User[]=[];
     private id = 1;
+    prisma: any;
 
 
     createUser(user:Omit<User,'id'>){
@@ -29,4 +31,19 @@ export class UsersService {
     findById( id : number){
         return this.users.find(u=> u.id === id)
     };
+
+    async updateProfile(userId:number, address:string){
+        return this.prisma.user.update({
+            where: {id: userId},
+            data: dot,
+            select:{
+                id: true,
+                name: true,
+                email: true,
+                phonenumber: true,
+                address: true,
+            }
+        });
+    }
+
 }
