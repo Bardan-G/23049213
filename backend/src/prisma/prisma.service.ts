@@ -8,6 +8,7 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  product: any
   constructor() {
     const adapter = new PrismaMariaDb({
       user: process.env.DB_USERNAME,
