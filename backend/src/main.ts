@@ -6,7 +6,7 @@ async function bootstrap() {
   
   // Production Tip: In a real app, you would limit this to your frontend URL
   app.enableCors({
-    origin: 'http://localhost:3003', // Next.js default port
+    origin: 'http://localhost:3000', // Next.js default port
     credentials: true,
   });
 

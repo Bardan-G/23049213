@@ -16,7 +16,7 @@ export default function RegisterPage(){
         try{
             await api.post('auth/register',{email,password,name});
             alert('Register Sucessfully Please Login');
-            router.push('/login');
+            router.push('/auth/login');
         }catch(error:any){
             alert(error.response?.data?.message || 'Registeration Failed');
         }
