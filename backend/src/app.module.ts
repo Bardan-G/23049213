@@ -7,9 +7,10 @@ import { AuthModule } from './auth/auth.module';
 import { DrizzleModule } from './drizzle/drizzle.module';
 import { ProductsModule } from './products/products.module';
 import { DbModule } from './db/db.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }),DrizzleModule, AuthModule, ProductsModule,DbModule,ProductsModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }),DrizzleModule, AuthModule, ProductsModule,DbModule,ProductsModule,CategoriesModule],
   controllers: [AppController],
   providers: [AppService],
 })
