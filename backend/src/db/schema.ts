@@ -53,3 +53,25 @@ export const productsRelations = relations(products, ({ one }) => ({
     references: [subcategories.id],
   }),
 }));
+
+export const cartItems = mysqlTable('cart_items', {
+  id: serial('id').primaryKey(),
+  // Links the cart to a specific user
+  userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'cascade' }),
+  // Links to the product being bought
+  productId: bigint('product_id', { mode: 'number' }).references(() => products.id, { onDelete: 'cascade' }),
+  quantity: int('quantity').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Add Relations for easy fetching
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
+  user: one(users, {
+    fields: [cartItems.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [cartItems.productId],
+    references: [products.id],
+  }),
+}));
