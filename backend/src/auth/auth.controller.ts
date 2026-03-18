@@ -4,7 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   async register(@Body() body: any) {
@@ -16,10 +16,15 @@ export class AuthController {
     return this.authService.login(body.email, body.password);
   }
 
+  @Post('google')
+  async googleLogin(@Body() body: any) {
+    return this.authService.googleLogin(body);
+  }
+
   // PROTECTION TEST: Only accessible with a valid JWT
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
-  getProfile(@Request() req:any) {
+  getProfile(@Request() req: any) {
     return req.user; // This is the data from JwtStrategy.validate()
   }
 }

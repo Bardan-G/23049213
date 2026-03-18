@@ -11,7 +11,7 @@ export interface Product {
   description?: string;
   imageUrl?: string;
   // categoryId?: number;
-  category:string;
+  category: string;
 }
 
 export default function ShopPage() {
@@ -23,16 +23,14 @@ export default function ShopPage() {
     const fetchProducts = async () => {
       try {
         const response = await api.get('/products');
-        console.log("Raw API Response:", response.data);
 
-        // Extracting the rows from Drizzle's [rows, fields] format
-        const result = Array.isArray(response.data[0]) 
-          ? response.data[0] 
-          : response.data;
+        // Handle both clean array and [rows, fields] format just in case
+        const data = response.data;
+        const productsList = Array.isArray(data) ? (Array.isArray(data[0]) ? data[0] : data) : [];
 
-        setProducts(Array.isArray(result) ? result : []);
+        setProducts(productsList);
       } catch (error) {
-        console.error("Connection Error:", error);
+        console.error("Failed to fetch products:", error);
       }
     };
 
@@ -40,16 +38,36 @@ export default function ShopPage() {
   }, []); // Empty dependency array means this runs once on mount
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8 text-white">All Furniture</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.length > 0 ? (
-          products.map((item) => (
-            <ProductCard key={item.id} product={item} />
-          ))
-        ) : (
-          <p className="text-gray-400">No products found. Check your database!</p>
-        )}
+    <div className="container mx-auto p-4 sm:p-8 pt-20 sm:pt-24 flex flex-col md:flex-row gap-8">
+      {/* Sidebar Filter */}
+      <aside className="w-full md:w-64 flex-shrink-0">
+        <h2 className="font-serif text-xl font-bold text-[#3e2723] mb-4 border-b border-[#3e2723]/10 pb-2">Categories</h2>
+        <ul className="space-y-2">
+          <li>
+            <a href="/shop" className="block text-gray-600 hover:text-[#d4af37] font-medium">All Furniture</a>
+          </li>
+          {['Living Room', 'Bedroom', 'Dining', 'Collections'].map((cat) => (
+            <li key={cat}>
+              <a href={`/${cat.toLowerCase().replace(' ', '-')}`} className="block text-gray-600 hover:text-[#d4af37]">
+                {cat}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1">
+        <h1 className="text-3xl font-bold mb-8 text-[#3e2723]">All Furniture</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.length > 0 ? (
+            products.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))
+          ) : (
+            <p className="text-gray-400">No products found. Check your database!</p>
+          )}
+        </div>
       </div>
     </div>
   );

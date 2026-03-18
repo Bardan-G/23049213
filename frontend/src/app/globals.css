@@ -1,26 +1,25 @@
-@import "tailwindcss";
+@import "tailwindcss"; /* This is the v4 way */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-wood-brown: #3E2723;
+  --color-royal-gold: #D4AF37;
+  --color-warm-ivory: #F5F5DC;
+  --color-off-white: #F9F9F9;
+  --color-taupe: #EBE7E0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Use standard CSS for body instead of @apply to avoid build errors */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-warm-ivory);
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+}
+
+/* If you must use @apply, ensure the classes exist in Tailwind */
+.btn-primary {
+  @apply bg-[#3e2723] text-white px-8 py-3 uppercase tracking-widest text-[10px] font-bold transition-all;
+}
+
+.btn-secondary {
+  @apply border border-[#3e2723] text-[#3e2723] px-8 py-3 uppercase tracking-widest text-[10px] font-bold transition-all;
 }
