@@ -26,11 +26,9 @@ export default function AdminChatPage() {
         if (session?.accessToken && session.user.role === 'admin') {
             connect(session.accessToken);
             fetchActiveChats();
-            return () => {
-                disconnect();
-            };
         }
-    }, [session?.accessToken, session?.user?.role, connect, disconnect]);
+        // Avoid returning disconnect() here if it causes strict-mode loops, or handle it carefully
+    }, [session?.accessToken, session?.user?.role]); // Removed connect/disconnect to prevent re-triggering
 
     const fetchActiveChats = async () => {
         try {
@@ -79,7 +77,7 @@ export default function AdminChatPage() {
                         activeChats.map(chat => (
                             <button
                                 key={chat.id}
-                                onClick={() => setActiveChat(chat.id)}
+                                onClick={() => setActiveChat(session?.accessToken as string, chat.id)}
                                 className={`w-full text-left p-4 border-b border-gray-100 transition flex items-center gap-3 ${activeChatUserId === chat.id ? 'bg-blue-50 border-blue-100' : 'hover:bg-white'
                                     }`}
                             >

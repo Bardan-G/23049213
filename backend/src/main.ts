@@ -8,12 +8,23 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
-  // Production Tip: In a real app, you would limit this to your frontend URL
+  // 1. Updated CORS for Production
   app.enableCors({
-    origin: 'http://localhost:3000', // Next.js default port
+    origin: [
+      'http://localhost:3000',        // For local testing
+      'https://gkatha.com.np',        // Your custom domain
+      /\.vercel\.app$/                // Allows all Vercel preview links
+    ],
     credentials: true,
   });
 
-  await app.listen(3002);
+  // 2. Dynamic Port Binding for Render
+  // Render passes a PORT env var; if missing, it defaults to 10000
+  const port = process.env.PORT || 10000;
+
+  // 3. Listen on '0.0.0.0' (CRITICAL for Render)
+  await app.listen(port, '0.0.0.0');
+  
+  console.log(`Application is running on port: ${port}`);
 }
 bootstrap();

@@ -38,17 +38,17 @@ export default function ShopPage() {
   }, []); // Empty dependency array means this runs once on mount
 
   return (
-    <div className="container mx-auto p-4 sm:p-8 pt-20 sm:pt-24 flex flex-col md:flex-row gap-8">
+    <div className="container mx-auto p-4 sm:p-8 pt-28 sm:pt-32 flex flex-col md:flex-row gap-8 bg-[#FAFAFA] min-h-screen w-full max-w-none">
       {/* Sidebar Filter */}
       <aside className="w-full md:w-64 flex-shrink-0">
-        <h2 className="font-serif text-xl font-bold text-[#3e2723] mb-4 border-b border-[#3e2723]/10 pb-2">Categories</h2>
-        <ul className="space-y-2">
+        <h2 className="font-serif text-xl font-bold text-[#3E2723] mb-6 border-b border-gray-200 pb-3 tracking-wide">Categories</h2>
+        <ul className="space-y-4 font-sans text-sm">
           <li>
-            <a href="/shop" className="block text-gray-600 hover:text-[#d4af37] font-medium">All Furniture</a>
+            <a href="/shop" className="block text-[#D4AF37] font-bold uppercase tracking-widest">All Furniture</a>
           </li>
           {['Living Room', 'Bedroom', 'Dining', 'Collections'].map((cat) => (
             <li key={cat}>
-              <a href={`/${cat.toLowerCase().replace(' ', '-')}`} className="block text-gray-600 hover:text-[#d4af37]">
+              <a href={`/${cat.toLowerCase().replace(' ', '-')}`} className="block text-[#3E2723]/70 hover:text-[#D4AF37] uppercase tracking-widest transition-colors">
                 {cat}
               </a>
             </li>
@@ -58,7 +58,7 @@ export default function ShopPage() {
 
       {/* Main Content */}
       <div className="flex-1">
-        <h1 className="text-3xl font-bold mb-8 text-[#3e2723]">All Furniture</h1>
+        <h1 className="text-4xl lg:text-5xl font-serif font-bold mb-10 text-[#3E2723]">All Furniture</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.length > 0 ? (
             products.map((item) => (

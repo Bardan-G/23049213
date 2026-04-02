@@ -36,8 +36,14 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
     }, [categoryName]);
 
     return (
-        <div className="container mx-auto p-4 sm:p-8 pt-20 sm:pt-24">
-            <h1 className="text-3xl font-bold mb-8 text-[#3e2723]">{categoryName}</h1>
+        <div className="container mx-auto p-4 sm:p-8 pt-28 sm:pt-32 bg-[#FAFAFA] min-h-screen max-w-none w-full">
+            <button 
+               onClick={() => window.location.href='/shop'} 
+               className="text-[#3E2723] text-[10px] uppercase tracking-[0.2em] font-bold font-sans mb-8 hover:text-[#D4AF37] transition-colors flex items-center gap-2 group"
+            >
+               <span className="transform group-hover:-translate-x-1 transition-transform">&larr;</span> Back to Categories
+            </button>
+            <h1 className="text-4xl lg:text-5xl font-serif font-bold mb-10 text-[#3E2723]">{categoryName}</h1>
 
             {loading ? (
                 <div className="text-center py-20">Loading...</div>

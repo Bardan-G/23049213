@@ -9,21 +9,22 @@ export default function HeroSection() {
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000" // Premium living room
+                    src="/heero.png"
                     alt="G Kastha Luxury Living"
                     fill
-                    className="object-cover brightness-[0.7]"
+                    className="object-cover brightness-[0.75] object-center"
                     priority
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/40 via-transparent to-[#1a1a1a]/20" />
             </div>
 
             {/* Content */}
-            <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <div className="relative z-10 text-center px-6 max-w-5xl mx-auto mt-20 md:mt-0">
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="text-[#D4AF37] text-sm md:text-base uppercase tracking-[0.3em] font-medium mb-4"
+                    transition={{ duration: 1, delay: 0.2 }}
+                    className="text-[#D4AF37] font-sans text-[10px] md:text-sm uppercase tracking-[0.4em] font-medium mb-6"
                 >
                     From Forest to Furniture
                 </motion.p>
@@ -31,8 +32,8 @@ export default function HeroSection() {
                 <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-serif text-[#F9F9F9] leading-tight mb-8"
+                    transition={{ duration: 1, delay: 0.4 }}
+                    className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-[1.15] mb-8"
                 >
                     The Whole Chain <br /> of Luxury
                 </motion.h1>
@@ -40,8 +41,8 @@ export default function HeroSection() {
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    className="text-[#EBE7E0] text-lg md:text-xl font-light tracking-wide max-w-2xl mx-auto mb-10"
+                    transition={{ duration: 1, delay: 0.6 }}
+                    className="text-[#EBE7E0] font-sans text-base md:text-xl font-light tracking-wide max-w-2xl mx-auto mb-12"
                 >
                     We control every step—from timber sawmill to your living room.
                     Experience the purity of handcrafted Scandinavian design.
@@ -50,13 +51,13 @@ export default function HeroSection() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.8 }}
-                    className="flex flex-col md:flex-row gap-4 justify-center"
+                    transition={{ duration: 1, delay: 0.8 }}
+                    className="flex flex-col sm:flex-row gap-6 justify-center"
                 >
-                    <button className="bg-[#D4AF37] text-[#3E2723] px-10 py-4 uppercase text-xs font-bold tracking-widest hover:bg-[#F9F9F9] transition-colors duration-300">
+                    <button className="bg-[#D4AF37] text-white px-12 py-5 uppercase text-[10px] font-sans font-bold tracking-[0.2em] hover:bg-white hover:text-[#3E2723] transition-all duration-500 shadow-xl">
                         Explore Collection
                     </button>
-                    <button className="border border-[#F9F9F9] text-[#F9F9F9] px-10 py-4 uppercase text-xs font-bold tracking-widest hover:bg-[#F9F9F9] hover:text-[#3E2723] transition-colors duration-300">
+                    <button className="border border-white/50 text-white px-12 py-5 uppercase text-[10px] font-sans font-bold tracking-[0.2em] hover:bg-white hover:text-[#3E2723] transition-all duration-500 backdrop-blur-sm">
                         Our Process
                     </button>
                 </motion.div>

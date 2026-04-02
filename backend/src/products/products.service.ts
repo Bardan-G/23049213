@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import { products, subcategories, categories, productVariants } from 'src/db/schema'; // Import all 3
+import { products, subcategories, categories, productVariants, productImages } from 'src/db/schema'; // Import all 3
 import { eq } from 'drizzle-orm';
 
 @Injectable()
@@ -8,10 +8,10 @@ export class ProductsService {
     constructor(@Inject('DRIZZLE') private db: MySql2Database) { }
 
     async create(data: any) {
-        // Extract variants and model3dUrl to handle separately
-        const { variants, ...productData } = data;
+        // Extract variants, images and model3dUrl to handle separately
+        const { variants, images, ...productData } = data;
 
-        // Execute inside transaction to ensure variants only save if product saves
+        // Execute inside transaction to ensure relations only save if product saves
         return await this.db.transaction(async (tx) => {
             const [insertResult] = await tx.insert(products).values(productData);
             const productId = insertResult.insertId;
@@ -23,12 +23,19 @@ export class ProductsService {
                 }));
                 await tx.insert(productVariants).values(variantsToInsert);
             }
-            return { id: productId, ...productData, variants };
+            if (images && Array.isArray(images) && images.length > 0) {
+                const imagesToInsert = images.map(url => ({
+                    imageUrl: url,
+                    productId: productId
+                }));
+                await tx.insert(productImages).values(imagesToInsert);
+            }
+            return { id: productId, ...productData, variants, images };
         });
     }
 
     async update(id: number, data: any) {
-        const { variants, ...productData } = data;
+        const { variants, images, ...productData } = data;
 
         return await this.db.transaction(async (tx) => {
             await tx.update(products).set(productData).where(eq(products.id, id));
@@ -42,6 +49,17 @@ export class ProductsService {
                         productId: id
                     }));
                     await tx.insert(productVariants).values(variantsToInsert);
+                }
+            }
+
+            if (images && Array.isArray(images)) {
+                await tx.delete(productImages).where(eq(productImages.productId, id));
+                if (images.length > 0) {
+                    const imagesToInsert = images.map(url => ({
+                        imageUrl: url,
+                        productId: id
+                    }));
+                    await tx.insert(productImages).values(imagesToInsert);
                 }
             }
             return { message: "Updated successfully" };
@@ -76,10 +94,16 @@ export class ProductsService {
             ? await this.db.select().from(productVariants)
             : [];
 
-        // Map variants to products
+        // Fetch all images for these products
+        const imagesList = productIds.length > 0
+            ? await this.db.select().from(productImages)
+            : [];
+
+        // Map variants and images to products
         return productsList.map(p => ({
             ...p,
-            variants: variantsList.filter(v => v.productId === p.id)
+            variants: variantsList.filter(v => v.productId === p.id),
+            images: imagesList.filter(i => i.productId === p.id)
         }));
     }
 
@@ -106,10 +130,12 @@ export class ProductsService {
         if (!result.length) return null;
 
         const variants = await this.db.select().from(productVariants).where(eq(productVariants.productId, id));
+        const images = await this.db.select().from(productImages).where(eq(productImages.productId, id));
 
         return {
             ...result[0],
-            variants
+            variants,
+            images
         };
     }
 

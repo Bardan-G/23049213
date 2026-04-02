@@ -1,8 +1,9 @@
 'use client';
 import { Product } from '@/app/shop/page';
 import React from 'react';
-import Link from 'next/link'; // Import Link for navigation
+import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/useCartStore';
+import toast from 'react-hot-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -10,10 +11,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const addToCart = useCartStore((state) => state.addToCart);
+  const router = useRouter();
 
   return (
-    // Wrap the card in a Link to the dynamic ID route
-    <Link href={`/shop/${product.id}`} className="group">
+    <div onClick={() => router.push(`/shop/${product.id}`)} className="group cursor-pointer h-full">
       <div className="border rounded-lg p-4 shadow-sm hover:shadow-xl transition-all duration-300 bg-white h-full flex flex-col">
 
         {/* Product Image Container */}
@@ -38,31 +39,30 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <h3 className="font-bold text-lg text-gray-800 group-hover:text-blue-600 transition-colors">
+        <h3 className="font-serif font-bold text-xl text-[#3E2723] group-hover:text-[#D4AF37] transition-colors">
           {product.name}
         </h3>
 
-        <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-grow">
+        <p className="text-sm text-gray-500 font-sans tracking-wide leading-relaxed line-clamp-2 mb-6 flex-grow">
           {product.description || "Elegant furniture designed for comfort and modern aesthetics."}
         </p>
 
-        <div className="flex justify-between items-center mt-auto">
-          <span className="text-xl font-bold text-gray-900">Rs. {product.price}</span>
+        <div className="flex justify-between items-center mt-auto border-t border-gray-100 pt-4">
+          <span className="text-lg font-bold text-[#D4AF37]">Rs. {product.price}</span>
 
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm z-10 relative"
+            className="bg-[#3E2723] text-white px-5 py-2 uppercase tracking-widest text-[10px] font-bold hover:bg-[#D4AF37] transition-all shadow-sm z-10 relative"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               addToCart(product);
-              // Optional: You could add a toast notification here
-              // alert('Added to cart!'); 
+              toast.success("Product added to cart");
             }}
           >
             Add to Cart
           </button>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

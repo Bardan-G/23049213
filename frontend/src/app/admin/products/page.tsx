@@ -19,7 +19,7 @@ export default function AdminProductsPage() {
   }
 
   const [formData, setFormData] = useState({
-    name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: 1, subcategoryId: 1, variants: [] as VariantData[]
+    name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: 1, subcategoryId: 1, variants: [] as VariantData[], images: [] as string[]
   });
   const [useFileUpload, setUseFileUpload] = useState(false);
 
@@ -79,14 +79,15 @@ export default function AdminProductsPage() {
       model3dUrl: product.model3dUrl || '',
       categoryId: product.categoryId || 1, // You might want to get this from product if available
       subcategoryId: product.subcategoryId || 1,
-      variants: product.variants || []
+      variants: product.variants || [],
+      images: product.images ? product.images.map((img: any) => img.imageUrl) : []
     });
     setShowForm(true);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: 1, subcategoryId: 1, variants: [] });
+    setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: 1, subcategoryId: 1, variants: [], images: [] });
     setUseFileUpload(false);
     setErrorMessage('');
     setShowForm(false);
@@ -199,13 +200,85 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-2">
-                <input placeholder="3D Model URL (.glb / .gltf)" className="border p-2 rounded w-full" value={formData.model3dUrl || ''} onChange={e => setFormData({ ...formData, model3dUrl: e.target.value })} />
+              <div className="flex flex-col gap-2 col-span-2 sm:col-span-1">
+                <label className="text-sm text-gray-600 block mb-1">3D Model (.glb / .gltf)</label>
+                {useFileUpload ? (
+                  <input type="file" accept=".glb,.gltf" className="border p-2 rounded w-full text-sm" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 50 * 1024 * 1024) {
+                        alert("3D Model exceeds 50MB limit.");
+                        e.target.value = '';
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onloadend = () => setFormData({ ...formData, model3dUrl: reader.result as string });
+                      reader.readAsDataURL(file);
+                    }
+                  }} />
+                ) : (
+                  <input placeholder="3D Model URL (.glb / .gltf)" className="border p-2 rounded w-full" value={formData.model3dUrl || ''} onChange={e => setFormData({ ...formData, model3dUrl: e.target.value })} />
+                )}
+                {useFileUpload && formData.model3dUrl && formData.model3dUrl.startsWith('data:') && (
+                  <p className="text-xs text-green-600 truncate py-1">✓ 3D Model ready to be uploaded</p>
+                )}
                 <p className="text-[10px] text-gray-500">Optional: Link to a 3D model required for the interactive viewer.</p>
               </div>
             </div>
 
             <textarea placeholder="Description" className="w-full border p-2 rounded" required value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+
+            {/* Extra Images Section */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50/50">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-gray-700 text-sm">Extra Product Images</h3>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                {formData.images.map((img, i) => (
+                  <div key={i} className="flex flex-col sm:flex-row gap-3 items-center border border-gray-200 p-3 rounded bg-white">
+                    {img && <img src={img} className="w-12 h-12 object-cover rounded border" alt="Extra" />}
+                    <input 
+                      placeholder="Image URL" 
+                      className="border p-2 rounded text-sm flex-1" 
+                      value={img} 
+                      onChange={e => {
+                        const newImgs = [...formData.images];
+                        newImgs[i] = e.target.value;
+                        setFormData({...formData, images: newImgs});
+                      }} 
+                    />
+                    <button type="button" onClick={() => {
+                      const newImgs = formData.images.filter((_, idx) => idx !== i);
+                      setFormData({...formData, images: newImgs});
+                    }} className="text-red-500 p-2 hover:bg-red-50 rounded">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+
+                <div className="flex items-center gap-2 mt-2">
+                  {useFileUpload ? (
+                    <input type="file" accept="image/*" multiple className="border p-2 rounded text-sm flex-1 bg-white" onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      files.forEach(file => {
+                        if (file.size > 5 * 1024 * 1024) return alert("Some files exceed 5MB.");
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData(prev => ({...prev, images: [...prev.images, reader.result as string]}));
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                      e.target.value = '';
+                    }} />
+                  ) : (
+                    <button type="button" onClick={() => setFormData({...formData, images: [...formData.images, '']})} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded transition w-full sm:w-auto">
+                      + Add Image URL
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
 
             {/* Colors / Variants Section */}
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50/50">

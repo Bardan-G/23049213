@@ -31,34 +31,46 @@ export default function Navbar() {
     return null; // Don't cover Admin dashboard with global storefront Navbar
   }
 
+  const isHomePage = pathname === '/';
+  
+  // Conditionally handle the header styling
+  const headerClass = isHomePage
+      ? (isScrolled ? 'bg-[#FAFAFA]/95 backdrop-blur-xl py-4 shadow-sm border-b border-gray-100' : 'bg-transparent py-8 border-b border-transparent')
+      : 'bg-[#FAFAFA] py-4 shadow-sm border-b border-gray-100'; // Default solid style for subpages
+
+  const textClass = isHomePage && !isScrolled ? 'text-white' : 'text-[#3E2723]';
+  const logoTextClass = isHomePage && !isScrolled ? 'text-white' : 'text-[#3E2723]';
+  const linkTextClass = (item: string) => 
+      isHomePage && !isScrolled ? 'text-white hover:text-[#D4AF37]' : 'text-[#3E2723] hover:text-[#D4AF37]';
+  
   return (
-    <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-[#Fdfbf7]/90 backdrop-blur-md py-3 shadow-sm' : 'bg-transparent py-5'}`}>
+    <header className={`fixed w-full z-50 transition-all duration-500 ${headerClass}`}>
       <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
 
         {/* Logo */}
-        <Link href="/" className="text-2xl md:text-3xl font-serif font-bold tracking-tighter text-[#3E2723]">
+        <Link href="/" className={`text-2xl md:text-3xl font-serif tracking-tight transition-colors duration-500 ${logoTextClass}`}>
           G Kastha
-          <span className="text-[#D4AF37] text-xs uppercase tracking-[0.3em] block font-sans font-normal mt-1 ml-1">Living</span>
+          <span className="text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] block font-sans font-medium mt-1 ml-1">Living</span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-10">
           {['Shop', 'Raw Material', 'About'].map((item) => (
             <Link
               key={item}
               href={`/${item.toLowerCase().replace(' ', '-')}`}
-              className="text-[#3E2723] text-xs uppercase tracking-[0.2em] font-medium hover:text-[#D4AF37] transition-colors relative group"
+              className={`text-[10px] sm:text-xs uppercase tracking-[0.2em] font-sans font-medium transition-colors duration-300 relative group ${linkTextClass(item)}`}
             >
               {item}
-              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#D4AF37] transition-all group-hover:w-full"></span>
+              <span className="absolute -bottom-1.5 left-0 w-0 h-[1px] bg-[#D4AF37] transition-all duration-300 group-hover:w-full"></span>
             </Link>
           ))}
         </nav>
 
         {/* Icons */}
-        <div className="flex items-center gap-6 text-[#3E2723]">
+        <div className={`flex items-center gap-6 transition-colors duration-500 ${textClass}`}>
           <button className="hover:text-[#D4AF37] transition-colors">
-            <Search size={20} strokeWidth={1.5} />
+            <Search size={20} strokeWidth={1} />
           </button>
 
           <NotificationsDropdown />
@@ -66,7 +78,7 @@ export default function Navbar() {
           {session ? (
             <div className="relative group">
               <button className="hover:text-[#D4AF37] transition-colors">
-                <User size={20} strokeWidth={1.5} />
+                <User size={20} strokeWidth={1} />
               </button>
               {/* Dropdown */}
               <div className="absolute right-0 top-full pt-4 w-40 hidden group-hover:block">
@@ -85,12 +97,12 @@ export default function Navbar() {
             </div>
           ) : (
             <Link href="/auth/login" className="hover:text-[#D4AF37] transition-colors">
-              <User size={20} strokeWidth={1.5} />
+              <User size={20} strokeWidth={1} />
             </Link>
           )}
 
           <Link href="/cart" className="relative hover:text-[#D4AF37] transition-colors">
-            <ShoppingBag size={20} strokeWidth={1.5} />
+            <ShoppingBag size={20} strokeWidth={1} />
             {itemCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#D4AF37] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {itemCount}
@@ -98,8 +110,8 @@ export default function Navbar() {
             )}
           </Link>
 
-          <button className="md:hidden">
-            <Menu size={24} strokeWidth={1.5} />
+          <button className="md:hidden hover:text-[#D4AF37] transition-colors">
+            <Menu size={24} strokeWidth={1} />
           </button>
         </div>
       </div>

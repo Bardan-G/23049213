@@ -27,9 +27,9 @@ interface ChatState {
     // Actions
     connect: (token: string) => void;
     disconnect: () => void;
-    setActiveChat: (userId: number | null) => void;
-    fetchAdminId: () => Promise<void>;
-    fetchHistory: (otherUserId: number) => Promise<void>;
+    setActiveChat: (token: string, userId: number | null) => void;
+    fetchAdminId: (token: string) => Promise<void>;
+    fetchHistory: (token: string, otherUserId: number) => Promise<void>;
     sendMessage: (receiverId: number, content: string) => void;
     addMessage: (message: ChatMessage) => void;
     clearUnread: () => void;
@@ -78,12 +78,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
 
         newSocket.on('newMessage', (message: ChatMessage) => {
-            const { activeChatUserId } = get();
+            const { activeChatUserId, adminId } = get();
 
-            // Only add to current messages if it belongs to the active chat
+            const isFromAdmin = message.sender?.role === 'admin' || String(message.senderId) === String(adminId);
+            const isChattingWithAdmin = String(activeChatUserId) === String(adminId);
+
+            // Only add to current messages if it belongs to the active chat explicitly,
+            // OR if the active chat is the admin support channel, accept it from ANY admin.
             if (
-                activeChatUserId === message.senderId ||
-                activeChatUserId === message.receiverId
+                String(activeChatUserId) === String(message.senderId) ||
+                String(activeChatUserId) === String(message.receiverId) ||
+                (isChattingWithAdmin && isFromAdmin)
             ) {
                 set((state) => ({ messages: [...state.messages, message] }));
             } else {
@@ -109,25 +114,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
     },
 
-    setActiveChat: (userId: number | null) => {
+    setActiveChat: (token: string, userId: number | null) => {
         set({ activeChatUserId: userId });
         if (userId) {
-            get().fetchHistory(userId);
+            get().fetchHistory(token, userId);
         }
     },
 
-    fetchAdminId: async () => {
+    fetchAdminId: async (token: string) => {
         try {
-            const res = await api.get('/chat/admin-id');
+            const res = await api.get('/chat/admin-id', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             set({ adminId: res.data.adminId });
         } catch (error) {
             console.error("Failed to fetch admin ID", error);
         }
     },
 
-    fetchHistory: async (otherUserId: number) => {
+    fetchHistory: async (token: string, otherUserId: number) => {
         try {
-            const res = await api.get(`/chat/history/${otherUserId}`);
+            const res = await api.get(`/chat/history/${otherUserId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             set({ messages: res.data });
         } catch (error) {
             console.error("Failed to fetch chat history", error);

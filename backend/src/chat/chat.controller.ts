@@ -11,7 +11,7 @@ export class ChatController {
 
     @Get('history/:otherUserId')
     async getHistory(@Request() req, @Param('otherUserId') otherUserId: string) {
-        const userId = req.user.userId;
+        const userId = Number(req.user.userId);
         return this.chatService.getChatHistory(userId, parseInt(otherUserId));
     }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { db } from '../db';
 import { messages, users } from '../db/schema';
-import { eq, or, and, desc, sql } from 'drizzle-orm';
+import { eq, or, and, desc, sql, inArray } from 'drizzle-orm';
 
 @Injectable()
 export class ChatService {
@@ -32,6 +32,37 @@ export class ChatService {
     }
 
     async getChatHistory(userId1: number, userId2: number) {
+        // Fetch users to know who is who based on role
+        const usersList = await db.select({ id: users.id, role: users.role }).from(users).where(
+            or(eq(users.id, userId1), eq(users.id, userId2))
+        );
+        const user1 = usersList.find(u => Number(u.id) === Number(userId1));
+        const user2 = usersList.find(u => Number(u.id) === Number(userId2));
+
+        let queryCondition;
+
+        if ((user1?.role === 'admin' && user2?.role === 'customer') || (user1?.role === 'customer' && user2?.role === 'admin')) {
+            const customerId = user1?.role === 'customer' ? userId1 : userId2;
+            
+            // Get all admin IDs
+            const adminUsers = await db.select({ id: users.id }).from(users).where(eq(users.role, 'admin'));
+            const adminIds = adminUsers.map(a => a.id);
+            if (adminIds.length === 0) adminIds.push(-1); // prevent empty array error
+
+            queryCondition = or(
+                // Message from Customer to any Admin
+                and(eq(messages.senderId, customerId), inArray(messages.receiverId, adminIds)),
+                // Message from any Admin to Customer
+                and(inArray(messages.senderId, adminIds), eq(messages.receiverId, customerId))
+            );
+        } else {
+            // Default exact peer-to-peer (just in case admins chat with each other)
+            queryCondition = or(
+                and(eq(messages.senderId, userId1), eq(messages.receiverId, userId2)),
+                and(eq(messages.senderId, userId2), eq(messages.receiverId, userId1))
+            );
+        }
+
         return await db.select({
             id: messages.id,
             senderId: messages.senderId,
@@ -46,12 +77,7 @@ export class ChatService {
         })
             .from(messages)
             .leftJoin(users, eq(messages.senderId, users.id))
-            .where(
-                or(
-                    and(eq(messages.senderId, userId1), eq(messages.receiverId, userId2)),
-                    and(eq(messages.senderId, userId2), eq(messages.receiverId, userId1))
-                )
-            )
+            .where(queryCondition)
             .orderBy(messages.createdAt);
     }
 
@@ -80,10 +106,11 @@ export class ChatService {
             email: users.email
         }).from(users);
 
-        const validUsers = allUsers.filter(u => userIds.includes(u.id));
+        const numericUserIds = userIds.map(id => Number(id));
+        const validUsers = allUsers.filter(u => numericUserIds.includes(Number(u.id)));
 
         return validUsers.map(user => {
-            const match = chatUsers.find(c => c.userId === user.id);
+            const match = chatUsers.find(c => Number(c.userId) === Number(user.id));
             return {
                 ...user,
                 lastMessageAt: match ? match.lastMessageAt : null

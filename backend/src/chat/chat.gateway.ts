@@ -44,7 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 secret: this.configService.get<string>('JWT_SECRET'),
             });
 
-            const userId = payload.sub;
+            const userId = Number(payload.sub);
             this.connectedUsers.set(userId, client.id);
             console.log(`Client authenticated: ${client.id}, userId: ${userId}`);
 
@@ -80,7 +80,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const message = await this.chatService.saveMessage(senderId, payload.receiverId, payload.content);
 
         // Send to receiver if online
-        const receiverSocketId = this.connectedUsers.get(payload.receiverId);
+        const receiverIdNum = Number(payload.receiverId);
+        const receiverSocketId = this.connectedUsers.get(receiverIdNum);
         if (receiverSocketId) {
             this.server.to(receiverSocketId).emit('newMessage', message);
         }

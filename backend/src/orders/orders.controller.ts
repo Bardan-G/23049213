@@ -21,7 +21,7 @@ export class OrdersController {
         return this.ordersService.verifyKhaltiPayment(req.user.userId, body.orderId, body.payload);
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // Removed AuthGuard so that eSewa callbacks (which lack session JWTs) are not rejected with 401
     @Post('verify-esewa')
     async verifyEsewa(@Body() body: { data: string }) {
         // esewa verification can be called from frontend without auth because data is signed

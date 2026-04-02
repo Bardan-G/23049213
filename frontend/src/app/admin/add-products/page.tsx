@@ -15,7 +15,18 @@ export default function AddProductPage() {
     price: '',
     stock: 0,
     subcategoryId: '',
+    model3dUrl: '',
   });
+  
+  const [images, setImages] = useState<string[]>(['']); // Array of image URLs
+
+  const handleAddImage = () => setImages([...images, '']);
+  const handleRemoveImage = (index: number) => setImages(images.filter((_, i) => i !== index));
+  const handleImageChange = (index: number, value: string) => {
+    const newImages = [...images];
+    newImages[index] = value;
+    setImages(newImages);
+  };
 
   // 1. Load Categories and Subcategories on mount
   useEffect(() => {
@@ -54,7 +65,9 @@ export default function AddProductPage() {
         price: parseFloat(formData.price).toFixed(2), // Matches decimal(10,2)
         stock: Number(formData.stock),                // Matches int('stock')
         subcategoryId: parseInt(formData.subcategoryId), // Matches int references
-        imageUrl: null, // Ensure this is sent as null if not used
+        imageUrl: images.find(img => img.trim() !== '') || null, // Keep first image as primary imageUrl for backward compatibility
+        images: images.filter(img => img.trim() !== ''), // Pass valid images
+        model3dUrl: formData.model3dUrl || null,
       };
 
       await api.post('/products/add', cleanData);
@@ -130,6 +143,47 @@ export default function AddProductPage() {
               onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">3D Model URL (.glb / .gltf) - Optional</label>
+          <input 
+            type="text" 
+            className="w-full p-3 bg-slate-700 rounded border border-slate-600 focus:border-blue-500 outline-none"
+            placeholder="https://example.com/model.glb"
+            onChange={(e) => setFormData({...formData, model3dUrl: e.target.value})}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Product Images (URLs)</label>
+          {images.map((img, index) => (
+            <div key={index} className="flex gap-2 mb-2">
+              <input 
+                type="text" 
+                className="w-full p-3 bg-slate-700 rounded border border-slate-600 focus:border-blue-500 outline-none"
+                placeholder="https://example.com/image.jpg"
+                value={img}
+                onChange={(e) => handleImageChange(index, e.target.value)}
+              />
+              {images.length > 1 && (
+                <button 
+                  type="button" 
+                  onClick={() => handleRemoveImage(index)}
+                  className="px-4 bg-red-600 hover:bg-red-700 rounded text-white font-bold"
+                >
+                  X
+                </button>
+              )}
+            </div>
+          ))}
+          <button 
+            type="button" 
+            onClick={handleAddImage}
+            className="px-4 py-2 mt-2 bg-slate-600 hover:bg-slate-500 rounded text-sm text-white transition-colors"
+          >
+            + Add Another Image URL
+          </button>
         </div>
 
         <button 

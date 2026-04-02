@@ -13,9 +13,9 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-10">
+      <div className="min-h-screen bg-white/50 text-white flex flex-col items-center justify-center p-10">
         <h2 className="text-3xl font-bold mb-4">Your cart is empty</h2>
-        <Link href="/" className="bg-blue-600 px-8 py-3 rounded-lg font-bold">
+        <Link href="/" className=" px-8 py-3 rounded-lg font-bold">
           Start Shopping
         </Link>
       </div>
@@ -23,12 +23,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6 md:p-12">
+    <div className="min-h-screen bg-white text-black p-6 mt-10 md:p-12">
       <h1 className="text-4xl font-bold mb-10">Shopping Cart</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-4">
           {cart.map((item: CartItem) => ( // 4. Type the map item too
-            <div key={item.id} className="bg-slate-800 border border-slate-700 p-4 rounded-xl flex items-center gap-6">
+            <div key={item.id} className="bg-slate-800 border border-slate-700== p-4 rounded-xl flex items-center gap-6">
               <img src={item.imageUrl} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
               <div className="flex-grow">
                 <h3 className="text-xl font-bold">{item.name}</h3>
@@ -40,19 +40,18 @@ export default function CartPage() {
                 <button onClick={() => addToCart(item)} className="px-2 hover:text-emerald-500 text-xl">+</button>
               </div>
               <button onClick={() => removeFromCart(item.id)} className="text-slate-500 hover:text-red-500">
-                🗑️
               </button>
             </div>
           ))}
         </div>
 
-        <div className="bg-slate-800 p-8 rounded-2xl h-fit border border-slate-700">
+        <div className="bg-slate-800 mt-10 p-10 rounded-2xl h-full border border-t-gray-700">
           <h2 className="text-2xl font-bold mb-6">Summary</h2>
-          <div className="flex justify-between text-xl font-bold border-t border-slate-700 pt-4">
+          <div className="flex justify-between text-xl font-bold border-t border-t-gray-700 pt-4">
             <span>Total</span>
             <span>Rs. {totalPrice().toFixed(2)}</span>
           </div>
-          <Link href="/checkout" className="block w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl mt-8 font-bold text-center">
+          <Link href="/checkout" className="block w-full bg-amber-400 hover:bg-amber-500 py-4 rounded-xl mt-8 font-bold text-center">
             Proceed to Checkout
           </Link>
         </div>

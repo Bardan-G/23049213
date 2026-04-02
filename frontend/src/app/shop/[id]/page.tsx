@@ -1,9 +1,10 @@
 'use client'
 import api from "@/lib/axios";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 // Dynamic import for model-viewer since it relies on window
 import dynamic from 'next/dynamic';
 import { Box } from "lucide-react";
@@ -21,6 +22,7 @@ export default function ProductDetailPage() {
 
     const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
     const [viewMode, setViewMode] = useState<'2D' | '3D'>('2D');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     const addToCart = useCartStore((state) => state.addToCart);
     const syncCart = useCartStore((state) => state.syncCart);
@@ -44,14 +46,24 @@ export default function ProductDetailPage() {
         if (session?.accessToken) {
             await syncCart(session.accessToken);
         }
-        alert(`${product.name} added to cart!`);
+        toast.success("Product added to cart");
     };
+
+    const allImages = useMemo(() => {
+        if (!product) return [];
+        let imgs: string[] = [];
+        if (product.imageUrl) imgs.push(product.imageUrl);
+        if (product.images && product.images.length > 0) {
+            imgs.push(...product.images.map((img: any) => img.imageUrl));
+        }
+        return Array.from(new Set(imgs)).filter(url => url && url.trim() !== "");
+    }, [product]);
 
     if (loading) return <div className="p-20 text-center text-gray-800">Loading details...</div>;
     if (!product) return <div className="p-20 text-center text-gray-800">Product not found.</div>;
 
     // Determine currently displayed image based on color selection
-    let displayImageUrl = product.imageUrl || 'https://via.placeholder.com/500';
+    let displayImageUrl = allImages.length > 0 ? allImages[currentImageIndex] : 'https://via.placeholder.com/500';
     if (selectedColorIndex !== null && product.variants?.[selectedColorIndex]?.imageUrl) {
         displayImageUrl = product.variants[selectedColorIndex].imageUrl;
     }
@@ -60,7 +72,17 @@ export default function ProductDetailPage() {
     const has3DModel = !!product.model3dUrl;
 
     return (
-        <div className="container mx-auto p-4 sm:p-8 pt-20 sm:pt-24 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 bg-[#Fdfbf7] min-h-screen">
+        <div className="container mx-auto p-4 sm:p-8 pt-28 sm:pt-32 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 bg-[#FAFAFA] min-h-screen max-w-none w-full">
+            {/* Top Bar Navigation spanning full width */}
+            <div className="col-span-full mb-[-1rem]">
+                <button 
+                   onClick={() => window.location.href='/shop'} 
+                   className="text-[#3E2723] text-[10px] uppercase tracking-[0.2em] font-bold font-sans hover:text-[#D4AF37] transition-colors flex items-center gap-2 group"
+                >
+                   <span className="transform group-hover:-translate-x-1 transition-transform">&larr;</span> Back to Shop
+                </button>
+            </div>
+
             {/* Left Side: Media Viewer */}
             <div className="flex flex-col gap-4">
                 <div className="relative h-[300px] sm:h-[400px] md:h-[500px] bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100 flex items-center justify-center">
@@ -105,6 +127,21 @@ export default function ProductDetailPage() {
                         >
                             <Box size={14} /> 3D View
                         </button>
+                    </div>
+                )}
+                
+                {/* Thumbnails Gallery */}
+                {allImages.length > 1 && (
+                    <div className="flex gap-2 mt-4 overflow-x-auto pb-2 justify-center">
+                        {allImages.map((img, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => { setCurrentImageIndex(idx); setViewMode('2D'); setSelectedColorIndex(null); }}
+                                className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${currentImageIndex === idx && viewMode === '2D' && selectedColorIndex === null ? 'border-[#3E2723]' : 'border-transparent opacity-70 hover:opacity-100 object-cover'}`}
+                            >
+                                <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-fit" />
+                            </button>
+                        ))}
                     </div>
                 )}
             </div>

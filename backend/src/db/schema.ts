@@ -60,9 +60,24 @@ export const productVariants = mysqlTable('product_variants', {
   imageUrl: longtext('image_url'), // Use text to allow long base64 strings
 });
 
+export const productImages = mysqlTable('product_images', {
+  id: serial('id').primaryKey(),
+  productId: bigint('product_id', { mode: 'number', unsigned: true })
+    .references(() => products.id, { onDelete: 'cascade' }),
+  imageUrl: longtext('image_url').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
   product: one(products, {
     fields: [productVariants.productId],
+    references: [products.id],
+  }),
+}));
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.productId],
     references: [products.id],
   }),
 }));
@@ -73,6 +88,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     references: [subcategories.id],
   }),
   variants: many(productVariants),
+  images: many(productImages),
 }));
 
 export const cartItems = mysqlTable('cart_items', {

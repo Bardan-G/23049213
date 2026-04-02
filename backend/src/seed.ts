@@ -75,7 +75,7 @@ async function main() {
             price: '899.99',
             stock: 20,
             imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800",
-            model3dUrl: "https://modelviewer.dev/shared-assets/models/Astronaut.glb", // using safe demo models
+            model3dUrl: "https://modelviewer.dev/shared-assets/models/Chair.glb", // using safe demo models
             subcategoryId: sofaId,
             variants: [
                 { colorName: "Emerald Green", colorHex: "#2E8B57", imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800" },
@@ -101,7 +101,7 @@ async function main() {
             price: '199.99',
             stock: 50,
             imageUrl: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=800",
-            model3dUrl: "https://modelviewer.dev/shared-assets/models/shiba.glb",
+            model3dUrl: "https://modelviewer.dev/shared-assets/models/Chair.glb",
             subcategoryId: chairId,
             variants: [
                 { colorName: "Charcoal Black", colorHex: "#1A1A1A", imageUrl: "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=800" },
@@ -126,7 +126,7 @@ async function main() {
             price: '349.00',
             stock: 12,
             imageUrl: "https://images.unsplash.com/photo-1594620302200-9a762244a156?auto=format&fit=crop&w=800",
-            model3dUrl: "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+            model3dUrl: "https://modelviewer.dev/shared-assets/models/Chair.glb",
             subcategoryId: tableId,
             variants: [
                 { colorName: "Matte Black", colorHex: "#000000", imageUrl: "https://images.unsplash.com/photo-1594620302200-9a762244a156?auto=format&fit=crop&w=800" },
@@ -163,7 +163,7 @@ async function main() {
             price: '599.00',
             stock: 7,
             imageUrl: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=800",
-            model3dUrl: "https://modelviewer.dev/shared-assets/models/shiba.glb",
+            model3dUrl: "https://modelviewer.dev/shared-assets/models/Chair.glb",
             subcategoryId: chairId,
             variants: [
                 { colorName: "Cognac Brown", colorHex: "#9A4621", imageUrl: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=800" },
@@ -186,7 +186,7 @@ async function main() {
             price: '129.99',
             stock: 25,
             imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=800",
-            model3dUrl: "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+            model3dUrl: "https://modelviewer.dev/shared-assets/models/Chair.glb",
             subcategoryId: tableId,
             variants: [
                 { colorName: "Chrome", colorHex: "#E8E8E8", imageUrl: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=800" },

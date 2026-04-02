@@ -35,9 +35,9 @@ export default function TimberKnowledge() {
         <section className="py-24 bg-[#F9F9F9]">
             <div className="max-w-7xl mx-auto px-6 md:px-12">
                 <div className="text-center mb-16">
-                    <span className="text-[#3E2723] text-xs uppercase tracking-[0.3em] font-bold block mb-4">Raw Material Expertise</span>
-                    <h2 className="text-4xl md:text-5xl font-serif text-[#3E2723]">Know Your Wood</h2>
-                    <p className="mt-4 text-[#3E2723]/70 max-w-2xl mx-auto">
+                    <span className="text-[#3E2723] text-[10px] uppercase tracking-[0.4em] font-sans font-medium block mb-4">Raw Material Expertise</span>
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#3E2723]">Know Your Wood</h2>
+                    <p className="mt-6 text-[#3E2723]/80 font-sans font-light max-w-2xl mx-auto leading-relaxed">
                         We don't just buy wood; we understand it. Every plank is tested for density and moisture content before it enters our workshop.
                     </p>
                 </div>
@@ -53,9 +53,9 @@ export default function TimberKnowledge() {
                             className={`${timber.color} p-8 rounded-lg shadow-lg hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group`}
                         >
                             <h3 className="text-2xl font-serif mb-2">{timber.name}</h3>
-                            <p className="text-xs uppercase tracking-widest opacity-80 mb-6">{timber.origin}</p>
+                            <p className="text-[10px] font-sans uppercase tracking-[0.3em] opacity-80 mb-6">{timber.origin}</p>
 
-                            <div className="space-y-4 mb-8">
+                            <div className="space-y-4 mb-8 font-sans">
                                 <div className="flex items-center gap-3">
                                     <Scale size={18} className="opacity-70" />
                                     <div>
@@ -72,7 +72,7 @@ export default function TimberKnowledge() {
                                 </div>
                             </div>
 
-                            <p className="text-sm leading-relaxed opacity-90 border-t border-current pt-6 border-opacity-20">
+                            <p className="text-sm font-sans font-light leading-relaxed opacity-90 border-t border-current pt-6 border-opacity-20">
                                 {timber.description}
                             </p>
 
