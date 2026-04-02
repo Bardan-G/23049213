@@ -9,20 +9,11 @@ import * as schema from './schema';
     {
       provide: 'DRIZZLE_CONNECTION',
       useFactory: async () => {
-        // 1. Prioritize the Environment Variable from Render
-        // 2. Fallback to local Docker/XAMPP for your MacBook
+        // This line is the fix: It uses the Render URL if available
         const connectionString = process.env.DATABASE_URL || "mysql://smart_furn:password123@127.0.0.1:3306/smart_furn_db";
         
-        console.log('Connecting to database...');
-
-        try {
-          const connection = await mysql.createConnection(connectionString);
-          console.log('Successfully connected to the database! 🎉');
-          return drizzle(connection, { schema, mode: 'default' });
-        } catch (error) {
-          console.error('Database connection failed:', error.message);
-          throw error;
-        }
+        const connection = await mysql.createConnection(connectionString);
+        return drizzle(connection, { schema, mode: 'default' });
       },
     },
   ],
