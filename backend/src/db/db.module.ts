@@ -1,22 +1,28 @@
-// backend/src/db/db.module.ts
 import { Module, Global } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/mysql2';
 import * as mysql from 'mysql2/promise';
 import * as schema from './schema';
 
-@Global() // This makes the database available everywhere without re-importing!
+@Global()
 @Module({
   providers: [
     {
       provide: 'DRIZZLE_CONNECTION',
       useFactory: async () => {
-        const connection = await mysql.createConnection({
-          host: 'localhost',
-          user: 'smart_furn',
-          password: 'password123', // Use your actual password from docker-compose
-          database: 'smart_furn_db',
-        });
-        return drizzle(connection, { schema, mode: 'default' });
+        // 1. Prioritize the Environment Variable from Render
+        // 2. Fallback to local Docker/XAMPP for your MacBook
+        const connectionString = process.env.DATABASE_URL || "mysql://smart_furn:password123@127.0.0.1:3306/smart_furn_db";
+        
+        console.log('Connecting to database...');
+
+        try {
+          const connection = await mysql.createConnection(connectionString);
+          console.log('Successfully connected to the database! 🎉');
+          return drizzle(connection, { schema, mode: 'default' });
+        } catch (error) {
+          console.error('Database connection failed:', error.message);
+          throw error;
+        }
       },
     },
   ],
