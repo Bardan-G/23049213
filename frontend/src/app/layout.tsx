@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Providers } from "@/components/Providers";
-import LiveChatWidget from "@/components/chats/LiveChats";
+import LiveChats from "@/components/chats/LiveChats";
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main className="flex-grow">{children}</main>
           <Footer />
-          <LiveChatWidget />
+          <LiveChats />
         </Providers>
         {/* <script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/script/1_5/khalti-checkout.min.js"></script> */}
       </body>
