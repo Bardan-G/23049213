@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Providers } from "@/components/Providers";
-import LiveChats from "@/components/chats/LiveChats";
+import LiveChats from "@/components/chat/LiveChatWidget";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],

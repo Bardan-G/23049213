@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useChatStore } from '@/store/useChatStore';
 import { MessageSquare, X, Send } from 'lucide-react';
 
-export default function LiveChats() {
+export default function LiveChatWidget() {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
