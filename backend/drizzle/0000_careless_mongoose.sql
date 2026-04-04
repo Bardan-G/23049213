@@ -3,7 +3,7 @@ CREATE TABLE `cart_items` (
 	`user_id` bigint unsigned,
 	`product_id` bigint unsigned,
 	`quantity` int NOT NULL DEFAULT 1,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `cart_items_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -18,7 +18,7 @@ CREATE TABLE `messages` (
 	`sender_id` bigint unsigned,
 	`receiver_id` bigint unsigned,
 	`content` text NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `messages_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -28,7 +28,7 @@ CREATE TABLE `notifications` (
 	`title` varchar(255) NOT NULL,
 	`message` text NOT NULL,
 	`is_read` boolean NOT NULL DEFAULT false,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `notifications_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -48,7 +48,7 @@ CREATE TABLE `orders` (
 	`status` varchar(50) NOT NULL DEFAULT 'pending',
 	`address` text NOT NULL,
 	`payment_method` varchar(50) NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `orders_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -56,7 +56,7 @@ CREATE TABLE `product_images` (
 	`id` serial AUTO_INCREMENT NOT NULL,
 	`product_id` bigint unsigned,
 	`image_url` longtext NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `product_images_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -79,7 +79,7 @@ CREATE TABLE `products` (
 	`subcategory_id` bigint unsigned,
 	`stock` int NOT NULL,
 	`status` varchar(20) NOT NULL DEFAULT 'active',
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` datetime,
 	`updated_at` timestamp ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `products_id` PRIMARY KEY(`id`)
 );

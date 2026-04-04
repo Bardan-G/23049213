@@ -1,4 +1,5 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
+import { datetime } from 'drizzle-orm/mysql-core';
 import { decimal, int, mysqlTable, serial, varchar, text, longtext, timestamp, bigint, boolean } from 'drizzle-orm/mysql-core';
 
 export const users = mysqlTable('users_table', {
@@ -34,7 +35,7 @@ export const products = mysqlTable('products', {
     .references(() => subcategories.id, { onDelete: 'set null' }),
   stock: int('stock').notNull(),
   status: varchar('status', { length: 20 }).notNull().default('active'), // 'active' | 'inactive'
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: datetime('created_at'),
   updatedAt: timestamp('updated_at').onUpdateNow(),
 });
 
@@ -65,7 +66,7 @@ export const productImages = mysqlTable('product_images', {
   productId: bigint('product_id', { mode: 'number', unsigned: true })
     .references(() => products.id, { onDelete: 'cascade' }),
   imageUrl: longtext('image_url').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
@@ -98,7 +99,7 @@ export const cartItems = mysqlTable('cart_items', {
   // Links to the product being bought
   productId: bigint('product_id', { mode: 'number', unsigned: true }).references(() => products.id, { onDelete: 'cascade' }),
   quantity: int('quantity').notNull().default(1),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 // Add Relations for easy fetching
@@ -120,7 +121,7 @@ export const orders = mysqlTable('orders', {
   status: varchar('status', { length: 50 }).notNull().default('pending'),
   address: text('address').notNull(),
   paymentMethod: varchar('payment_method', { length: 50 }).notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const orderItems = mysqlTable('order_items', {
@@ -156,7 +157,7 @@ export const notifications = mysqlTable('notifications', {
   title: varchar('title', { length: 255 }).notNull(),
   message: text('message').notNull(),
   isRead: boolean('is_read').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({
@@ -171,7 +172,7 @@ export const messages = mysqlTable('messages', {
   senderId: bigint('sender_id', { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }),
   receiverId: bigint('receiver_id', { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }), // Null if it's a general message to admin, or we store admin's ID
   content: text('content').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const messagesRelations = relations(messages, ({ one }) => ({
