@@ -9,11 +9,21 @@ import * as schema from './schema';
     {
       provide: 'DRIZZLE_CONNECTION',
       useFactory: async () => {
-        // This line is the fix: It uses the Render URL if available
-        const connectionString = process.env.DATABASE_URL || "mysql://smart_furn:password123@127.0.0.1:3306/smart_furn_db";
-        
-        const connection = await mysql.createConnection(connectionString);
-        return drizzle(connection, { schema, mode: 'default' });
+        const connectionString = process.env.DATABASE_URL;
+
+        if (!connectionString) {
+          throw new Error('DATABASE_URL is not defined in environment variables');
+        }
+
+        // Use a Pool for better stability in production
+        const pool = mysql.createPool({
+          uri: connectionString,
+          connectionLimit: 5, // Important for Free SQL Database limits
+          waitForConnections: true,
+          queueLimit: 0,
+        });
+
+        return drizzle(pool, { schema, mode: 'default' });
       },
     },
   ],
