@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, BadRequestException } from '@nestjs/common';
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import * as schema from '../db/schema';
 import { eq, desc, and } from 'drizzle-orm';
@@ -23,7 +23,7 @@ export class OrdersService {
                     where: eq(schema.products.id, item.productId),
                 });
                 if (!product || product.stock < item.quantity) {
-                    throw new Error(`Product ${product?.name || 'Unknown'} is out of stock`);
+                    throw new BadRequestException(`Product ${product?.name || 'Unknown'} is out of stock or no longer exists.`);
                 }
             }
 
@@ -68,9 +68,16 @@ export class OrdersService {
             }
 
             return { orderId, message: 'Order placed successfully' };
-        } catch (error) {
+        } catch (error: any) {
             console.error("Create Order Error:", error);
-            throw error; // Re-throw to let controller handle it (500)
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            // For foreign key errors (like userId no longer exists because db was wiped)
+            if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+                throw new BadRequestException("Your account or product data is out of sync. Please log out, clear your cart, and login again.");
+            }
+            throw new BadRequestException(error.message || "Failed to process the order request.");
         }
     }
 
