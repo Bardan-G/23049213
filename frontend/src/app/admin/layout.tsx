@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, ShoppingBag, Package, Users, LogOut, Menu, X, MessageSquare } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Users, LogOut, Menu, X, MessageSquare, Tags } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession();
@@ -49,6 +49,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Link href="/admin/products" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded hover:bg-white/10 transition">
                         <Package size={20} />
                         Products
+                    </Link>
+                    <Link href="/admin/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded hover:bg-white/10 transition">
+                        <Tags size={20} />
+                        Categories
                     </Link>
                     <Link href="/admin/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded hover:bg-white/10 transition">
                         <ShoppingBag size={20} />

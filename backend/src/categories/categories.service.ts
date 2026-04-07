@@ -4,7 +4,7 @@ import { categories, subcategories } from "src/db/schema";
 
 @Injectable()
 export class CategoriesService {
-    constructor(@Inject('DRIZZLE_CONNECTION') private db: MySql2Database) {}
+    constructor(@Inject('DRIZZLE') private db: MySql2Database) {}
 
     // Add a Category
     async create(data: { name: string }) {

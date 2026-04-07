@@ -17,7 +17,12 @@ export const DRIZZLE = 'DRIZZLE';
         if (!connectionString) {
           throw new Error('DATABASE_URL is not defined in the environment variables');
         }
-        const pool = mysql.createPool(connectionString);
+        const pool = mysql.createPool({
+          uri: connectionString,
+          connectionLimit: 4, // Max allowed for Free SQL Databases (reserves 1 slot)
+          waitForConnections: true,
+          queueLimit: 0,
+        });
         return drizzle(pool, { schema, mode: 'default' });
       },
     },

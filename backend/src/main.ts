@@ -12,7 +12,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000',        // For local testing
-      'https://gkatha.com.np',        // Your custom domain
+      'https://gkastha.com.np',       // Your custom domain stripped
+      'https://www.gkastha.com.np',   // Your custom domain with www
       /\.vercel\.app$/                // Allows all Vercel preview links
     ],
     credentials: true,
@@ -24,7 +25,7 @@ async function bootstrap() {
 
   // 3. Listen on '0.0.0.0' (CRITICAL for Render)
   await app.listen(port, '0.0.0.0');
-  
+
   console.log(`Application is running on port: ${port}`);
 }
 bootstrap();

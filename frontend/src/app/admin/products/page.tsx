@@ -19,7 +19,7 @@ export default function AdminProductsPage() {
   }
 
   const [formData, setFormData] = useState({
-    name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: 1, subcategoryId: 1, variants: [] as VariantData[], images: [] as string[]
+    name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: '' as number | string, subcategoryId: '' as number | string, variants: [] as VariantData[], images: [] as string[]
   });
   const [useFileUpload, setUseFileUpload] = useState(false);
 
@@ -77,8 +77,8 @@ export default function AdminProductsPage() {
       stock: product.stock,
       imageUrl: product.imageUrl,
       model3dUrl: product.model3dUrl || '',
-      categoryId: product.categoryId || 1, // You might want to get this from product if available
-      subcategoryId: product.subcategoryId || 1,
+      categoryId: product.categoryId || '',
+      subcategoryId: product.subcategoryId || '',
       variants: product.variants || [],
       images: product.images ? product.images.map((img: any) => img.imageUrl) : []
     });
@@ -87,7 +87,7 @@ export default function AdminProductsPage() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: 1, subcategoryId: 1, variants: [], images: [] });
+    setFormData({ name: '', description: '', price: '', stock: '', imageUrl: '', model3dUrl: '', categoryId: '', subcategoryId: '', variants: [], images: [] });
     setUseFileUpload(false);
     setErrorMessage('');
     setShowForm(false);
@@ -133,6 +133,12 @@ export default function AdminProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    
+    if (!formData.categoryId || !formData.subcategoryId) {
+      setErrorMessage("Please select a valid Category and Subcategory. If they don't exist, create them in the Categories tab first.");
+      return;
+    }
+
     try {
       const payload = {
         ...formData,
@@ -169,6 +175,15 @@ export default function AdminProductsPage() {
           <Plus size={20} /> Add Product
         </button>
       </div>
+
+      {categories.length === 0 && !loading && (
+        <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between rounded">
+          <p>You need to create categories and subcategories before you can add products.</p>
+          <a href="/admin/categories" className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition text-sm text-center font-medium">
+            Manage Categories
+          </a>
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">

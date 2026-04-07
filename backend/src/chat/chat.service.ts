@@ -1,19 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { db } from '../db';
+import { Injectable, Inject } from '@nestjs/common';
+import { MySql2Database } from 'drizzle-orm/mysql2';
 import { messages, users } from '../db/schema';
+import * as schema from '../db/schema';
 import { eq, or, and, desc, sql, inArray } from 'drizzle-orm';
 
 @Injectable()
 export class ChatService {
+    constructor(@Inject('DRIZZLE') private db: MySql2Database<typeof schema>) { }
+
     async saveMessage(senderId: number, receiverId: number, content: string) {
-        const [result] = await db.insert(messages).values({
+        const [result] = await this.db.insert(messages).values({
             senderId,
             receiverId,
             content,
         });
 
         // Fetch and return the newly created message with sender/receiver details
-        const newMessageList = await db.select({
+        const newMessageList = await this.db.select({
             id: messages.id,
             senderId: messages.senderId,
             receiverId: messages.receiverId,
@@ -33,7 +36,7 @@ export class ChatService {
 
     async getChatHistory(userId1: number, userId2: number) {
         // Fetch users to know who is who based on role
-        const usersList = await db.select({ id: users.id, role: users.role }).from(users).where(
+        const usersList = await this.db.select({ id: users.id, role: users.role }).from(users).where(
             or(eq(users.id, userId1), eq(users.id, userId2))
         );
         const user1 = usersList.find(u => Number(u.id) === Number(userId1));
@@ -45,7 +48,7 @@ export class ChatService {
             const customerId = user1?.role === 'customer' ? userId1 : userId2;
             
             // Get all admin IDs
-            const adminUsers = await db.select({ id: users.id }).from(users).where(eq(users.role, 'admin'));
+            const adminUsers = await this.db.select({ id: users.id }).from(users).where(eq(users.role, 'admin'));
             const adminIds = adminUsers.map(a => a.id);
             if (adminIds.length === 0) adminIds.push(-1); // prevent empty array error
 
@@ -63,7 +66,7 @@ export class ChatService {
             );
         }
 
-        return await db.select({
+        return await this.db.select({
             id: messages.id,
             senderId: messages.senderId,
             receiverId: messages.receiverId,
@@ -83,7 +86,7 @@ export class ChatService {
 
     async getActiveChats() {
         // Get unique users who have chatted with admins
-        const chatUsers = await db.select({
+        const chatUsers = await this.db.select({
             userId: sql<number>`CASE WHEN ${messages.senderId} IN (SELECT id FROM users_table WHERE role = 'admin') THEN ${messages.receiverId} ELSE ${messages.senderId} END`.as('userId'),
             lastMessageAt: sql<Date>`MAX(${messages.createdAt})`.as('lastMessageAt')
         })
@@ -99,8 +102,7 @@ export class ChatService {
         if (userIds.length === 0) return [];
 
         // Fetch user details for these IDs
-        // Instead of using inArray, let's fetch all users and filter in memory to avoid query complexity issues with Drizzle in some SQL dialects
-        const allUsers = await db.select({
+        const allUsers = await this.db.select({
             id: users.id,
             name: users.name,
             email: users.email
@@ -123,7 +125,7 @@ export class ChatService {
     }
 
     async getAdminUser() {
-        const adminUsers = await db.select({
+        const adminUsers = await this.db.select({
             id: users.id
         }).from(users).where(eq(users.role, 'admin')).limit(1);
 
