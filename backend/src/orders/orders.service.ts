@@ -109,8 +109,8 @@ export class OrdersService {
 
             // Extract orderId from transaction_uuid (format: order-{id} or just {id} depending on frontend)
             const transactionUuidStr = String(parsedData.transaction_uuid);
-            const orderIdStr = transactionUuidStr.replace('order_', '');
-            const orderId = Number(orderIdStr);
+            const parts = transactionUuidStr.split('_'); // 'order_123_17000' -> ['order', '123', '17000']
+            const orderId = Number(parts[1]);
 
             await this.db.update(schema.orders).set({ status: 'paid' }).where(eq(schema.orders.id, orderId));
 
