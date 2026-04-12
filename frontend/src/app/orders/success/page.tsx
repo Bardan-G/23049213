@@ -8,7 +8,8 @@ import { useCartStore } from "@/store/useCartStore";
 
 function SuccessContent() {
     const searchParams = useSearchParams();
-    const data = searchParams.get('data');
+    const dataRaw = searchParams.get('data');
+    const data = dataRaw ? dataRaw.replace(/ /g, '+') : null;
     const { clearCart } = useCartStore();
 
     const [verifying, setVerifying] = useState(!!data);

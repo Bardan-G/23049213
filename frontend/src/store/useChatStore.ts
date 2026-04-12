@@ -58,7 +58,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
         // Connect to the backend WebSocket
         const newSocket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
             query: { token },
-            transports: ['websocket'],
             autoConnect: true,
             reconnection: true,
             reconnectionAttempts: 5,
