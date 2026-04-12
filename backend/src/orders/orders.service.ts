@@ -114,10 +114,10 @@ export class OrdersService {
                 // throw new Error('Invalid signature');
             }
 
-            // Extract orderId from transaction_uuid (format: order-{id} or just {id} depending on frontend)
+            // Extract orderId from transaction_uuid
             const transactionUuidStr = String(parsedData.transaction_uuid);
-            const parts = transactionUuidStr.split('_'); // 'order_123_17000' -> ['order', '123', '17000']
-            const orderId = Number(parts[1]);
+            const parts = transactionUuidStr.split('-');
+            const orderId = Number(parts[0].replace('order_', ''));
 
             await this.db.update(schema.orders).set({ status: 'paid' }).where(eq(schema.orders.id, orderId));
 

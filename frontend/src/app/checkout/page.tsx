@@ -108,7 +108,7 @@ export default function CheckoutPage() {
 
     const initiateEsewa = async (orderId: number) => {
         const total_amount = totalPrice();
-        const transaction_uuid = `order_${orderId}_${Date.now()}`;
+        const transaction_uuid = `${orderId}-${Math.random().toString(36).substring(2, 10)}-${Date.now().toString().slice(-6)}`;
         const product_code = "EPAYTEST";
 
         try {
