@@ -85,37 +85,60 @@ export class ChatService {
     }
 
     async getActiveChats() {
-        // Get unique users who have chatted with admins
-        const chatUsers = await this.db.select({
-            userId: sql<number>`CASE WHEN ${messages.senderId} IN (SELECT id FROM users_table WHERE role = 'admin') THEN ${messages.receiverId} ELSE ${messages.senderId} END`.as('userId'),
-            lastMessageAt: sql<Date>`MAX(${messages.createdAt})`.as('lastMessageAt')
-        })
-            .from(messages)
-            .groupBy(sql`userId`)
-            .orderBy(desc(sql`lastMessageAt`));
+        // Fetch users to find admins
+        const adminUsers = await this.db.select({ id: users.id }).from(users).where(eq(users.role, 'admin'));
+        const adminIds = adminUsers.map(a => Number(a.id));
+        if (adminIds.length === 0) return [];
 
-        if (chatUsers.length === 0) return [];
+        // Fetch all messages involving admins to group them by the other user
+        const allAdminMessages = await this.db.select({
+            senderId: messages.senderId,
+            receiverId: messages.receiverId,
+            createdAt: messages.createdAt
+        }).from(messages)
+        .where(or(
+            inArray(messages.senderId, adminIds),
+            inArray(messages.receiverId, adminIds)
+        ));
 
-        // Extract valid user IDs
-        const userIds = chatUsers.map(c => c.userId).filter(id => id !== null);
+        const userLastMessageMap = new Map<number, Date>();
 
+        for (const msg of allAdminMessages) {
+            const sender = Number(msg.senderId);
+            const receiver = Number(msg.receiverId);
+            
+            // The customer is whichever one is NOT an admin.
+            // If both are admins (rare), we can skip or track.
+            let customerId = -1;
+            if (adminIds.includes(sender) && !adminIds.includes(receiver)) {
+                customerId = receiver;
+            } else if (!adminIds.includes(sender) && adminIds.includes(receiver)) {
+                customerId = sender;
+            }
+
+            if (customerId !== -1) {
+                const existingDate = userLastMessageMap.get(customerId);
+                const msgDate = new Date(msg.createdAt!);
+                if (!existingDate || msgDate > existingDate) {
+                    userLastMessageMap.set(customerId, msgDate);
+                }
+            }
+        }
+
+        const userIds = Array.from(userLastMessageMap.keys());
         if (userIds.length === 0) return [];
 
-        // Fetch user details for these IDs
-        const allUsers = await this.db.select({
+        // Fetch user details
+        const validUsers = await this.db.select({
             id: users.id,
             name: users.name,
             email: users.email
-        }).from(users);
-
-        const numericUserIds = userIds.map(id => Number(id));
-        const validUsers = allUsers.filter(u => numericUserIds.includes(Number(u.id)));
+        }).from(users).where(inArray(users.id, userIds));
 
         return validUsers.map(user => {
-            const match = chatUsers.find(c => Number(c.userId) === Number(user.id));
             return {
                 ...user,
-                lastMessageAt: match ? match.lastMessageAt : null
+                lastMessageAt: userLastMessageMap.get(Number(user.id)) || null
             };
         }).sort((a, b) => {
             if (!a.lastMessageAt) return 1;
