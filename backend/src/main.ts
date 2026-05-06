@@ -20,8 +20,8 @@ async function bootstrap() {
   });
 
   // 2. Dynamic Port Binding for Render
-  // Render passes a PORT env var; if missing, it defaults to 10000
-  const port = process.env.PORT || 10000;
+  // Render passes a PORT env var; if missing, it defaults to 3002 for local dev
+  const port = process.env.PORT || 3002;
 
   // 3. Listen on '0.0.0.0' (CRITICAL for Render)
   await app.listen(port, '0.0.0.0');

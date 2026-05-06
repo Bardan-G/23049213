@@ -85,66 +85,73 @@ export class ChatService {
     }
 
     async getActiveChats() {
-        // Fetch users to find admins
-        const adminUsers = await this.db.select({ id: users.id }).from(users).where(eq(users.role, 'admin'));
-        const adminIds = adminUsers.map(a => Number(a.id));
-        if (adminIds.length === 0) return [];
+        try {
+            // Fetch users to find admins
+            const adminUsers = await this.db.select({ id: users.id }).from(users).where(eq(users.role, 'admin'));
+            const adminIds = adminUsers.map(a => Number(a.id)).filter(id => !isNaN(id) && id > 0);
+            if (adminIds.length === 0) return [];
 
-        // Fetch all messages involving admins to group them by the other user
-        const allAdminMessages = await this.db.select({
-            senderId: messages.senderId,
-            receiverId: messages.receiverId,
-            createdAt: messages.createdAt
-        }).from(messages)
-        .where(or(
-            inArray(messages.senderId, adminIds),
-            inArray(messages.receiverId, adminIds)
-        ));
+            // Fetch all messages involving admins to group them by the other user
+            const allAdminMessages = await this.db.select({
+                senderId: messages.senderId,
+                receiverId: messages.receiverId,
+                createdAt: messages.createdAt
+            }).from(messages)
+            .where(or(
+                inArray(messages.senderId, adminIds),
+                inArray(messages.receiverId, adminIds)
+            ));
 
-        const userLastMessageMap = new Map<number, Date>();
+            const userLastMessageMap = new Map<number, Date>();
 
-        for (const msg of allAdminMessages) {
-            const sender = Number(msg.senderId);
-            const receiver = Number(msg.receiverId);
-            
-            // The customer is whichever one is NOT an admin.
-            // If both are admins (rare), we can skip or track.
-            let customerId = -1;
-            if (adminIds.includes(sender) && !adminIds.includes(receiver)) {
-                customerId = receiver;
-            } else if (!adminIds.includes(sender) && adminIds.includes(receiver)) {
-                customerId = sender;
-            }
+            for (const msg of allAdminMessages) {
+                const sender = Number(msg.senderId);
+                const receiver = Number(msg.receiverId);
+                
+                // The customer is whichever one is NOT an admin.
+                // If both are admins (rare), we can skip or track.
+                let customerId = -1;
+                if (adminIds.includes(sender) && !adminIds.includes(receiver)) {
+                    customerId = receiver;
+                } else if (!adminIds.includes(sender) && adminIds.includes(receiver)) {
+                    customerId = sender;
+                }
 
-            if (customerId !== -1) {
-                const existingDate = userLastMessageMap.get(customerId);
-                const msgDate = new Date(msg.createdAt!);
-                if (!existingDate || msgDate > existingDate) {
-                    userLastMessageMap.set(customerId, msgDate);
+                if (customerId > 0) { // Safely ensure valid customer ID
+                    const existingDate = userLastMessageMap.get(customerId);
+                    const msgDate = new Date(msg.createdAt || new Date());
+                    if (!existingDate || msgDate > existingDate) {
+                        userLastMessageMap.set(customerId, msgDate);
+                    }
                 }
             }
+
+            // Ensure we don't query with invalid IDs or empty arrays
+            const userIds = Array.from(userLastMessageMap.keys()).filter(id => !isNaN(id) && id > 0);
+            if (userIds.length === 0) return [];
+
+            // Fetch user details
+            const validUsers = await this.db.select({
+                id: users.id,
+                name: users.name,
+                email: users.email
+            }).from(users).where(inArray(users.id, userIds));
+
+            return validUsers.map(user => {
+                return {
+                    ...user,
+                    lastMessageAt: userLastMessageMap.get(Number(user.id)) || null
+                };
+            }).sort((a, b) => {
+                if (!a.lastMessageAt) return 1;
+                if (!b.lastMessageAt) return -1;
+                return b.lastMessageAt.getTime() - a.lastMessageAt.getTime();
+            });
+        } catch (error) {
+            console.error('getActiveChats error:', error);
+            // Return empty list gracefully instead of crashing with 500
+            return [];
         }
-
-        const userIds = Array.from(userLastMessageMap.keys());
-        if (userIds.length === 0) return [];
-
-        // Fetch user details
-        const validUsers = await this.db.select({
-            id: users.id,
-            name: users.name,
-            email: users.email
-        }).from(users).where(inArray(users.id, userIds));
-
-        return validUsers.map(user => {
-            return {
-                ...user,
-                lastMessageAt: userLastMessageMap.get(Number(user.id)) || null
-            };
-        }).sort((a, b) => {
-            if (!a.lastMessageAt) return 1;
-            if (!b.lastMessageAt) return -1;
-            return b.lastMessageAt.getTime() - a.lastMessageAt.getTime();
-        });
     }
 
     async getAdminUser() {

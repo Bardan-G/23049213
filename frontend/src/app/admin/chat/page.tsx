@@ -20,6 +20,7 @@ export default function AdminChatPage() {
         activeChatUserId,
         setActiveChat,
         sendMessage,
+        unreadCount,
     } = useChatStore();
 
     useEffect(() => {
@@ -42,6 +43,14 @@ export default function AdminChatPage() {
             setLoading(false);
         }
     };
+
+    // Refetch active chats when unreadCount changes or when a message is sent/received
+    // to ensure the sidebar correctly lists new users.
+    useEffect(() => {
+        if (session?.accessToken && session.user.role === 'admin') {
+            fetchActiveChats();
+        }
+    }, [unreadCount, messages.length, session?.accessToken, session?.user?.role]);
 
     useEffect(() => {
         if (messagesEndRef.current) {

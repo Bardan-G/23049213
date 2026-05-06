@@ -83,16 +83,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const receiverIdNum = Number(payload.receiverId);
         const receiverSocketId = this.connectedUsers.get(receiverIdNum);
         
-        // Also figure out if receiver is an admin from DB or memory? 
-        // We know admins join the 'admins' room.
-        // It's safer to just lookup receiver role or just blindly emit to their specific socket ID.
+        // Use a single chained 'to()' call so Socket.IO handles deduplication 
+        // if the receiver happens to also be in the 'admins' room.
+        let broadcast = this.server.to('admins');
         if (receiverSocketId) {
-            this.server.to(receiverSocketId).emit('newMessage', message);
+            broadcast = broadcast.to(receiverSocketId);
         }
-
-        // Always emit to admins room. This ensures all admins get real-time updates for any message sent.
-        // If the sender is an admin, they are also in the admins room, but the check on frontend filters appropriately.
-        this.server.to('admins').emit('newMessage', message);
+        
+        broadcast.emit('newMessage', message);
 
         // Send back to sender to confirm
         client.emit('messageSent', message);

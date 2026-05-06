@@ -101,22 +101,25 @@ export class OrdersService {
                 throw new Error('Payment not complete');
             }
 
-            try {
-                if (parsedData.signed_field_names) {
-                    const secretKey = "8gBm/:&EnhH.1/q";
-                    const signedFields = parsedData.signed_field_names.split(',');
-                    const messageParts = signedFields.map((field: string) => `${field}=${parsedData[field]}`);
-                    const message = messageParts.join(',');
-
-                    const signature = crypto.createHmac('sha256', secretKey).update(message).digest('base64');
-
-                    if (signature !== parsedData.signature) {
-                        console.error("Esewa signature mismatch!", signature, parsedData.signature);
-                        // We could throw here, but for test environments eSewa sometimes sends inconsistent signatures
+            if (parsedData.signed_field_names) {
+                const secretKey = "8gBm/:&EnhH.1/q"; // Note: For production use production secret key
+                const signedFields = parsedData.signed_field_names.split(',');
+                const messageParts = signedFields.map((field: string) => {
+                    let val = parsedData[field];
+                    // Esewa documentation requires removing commas from total_amount before generating signature
+                    if (field === 'total_amount' && typeof val === 'string') {
+                        val = val.replace(/,/g, '');
                     }
+                    return `${field}=${val}`;
+                });
+                const message = messageParts.join(',');
+
+                const signature = crypto.createHmac('sha256', secretKey).update(message).digest('base64');
+
+                if (signature !== parsedData.signature) {
+                    console.error("Esewa signature mismatch!", signature, parsedData.signature);
+                    throw new BadRequestException('Esewa signature mismatch. Payment verification failed.');
                 }
-            } catch (sigError) {
-                console.error("Signature verification skipped due to error:", sigError);
             }
 
             // Extract orderId from transaction_uuid
@@ -180,39 +183,63 @@ export class OrdersService {
             throw new Error("Order not found or unauthorized");
         }
 
-        const doc = new PDFDocument({ margin: 50 });
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+        // Generate formatted Order ID (e.g. ORD-2026-00011)
+        const orderYear = order.createdAt ? new Date(order.createdAt).getFullYear() : new Date().getFullYear();
+        const formattedOrderId = `ORD-${orderYear}-${String(order.id).padStart(5, '0')}`;
 
         // Response headers
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=invoice-${orderId}.pdf`);
+        res.setHeader('Content-Disposition', `attachment; filename=invoice-${formattedOrderId}.pdf`);
 
         doc.pipe(res);
 
-        // Header
-        doc.fontSize(20).text('Smart Furniture Invoice', { align: 'center' });
-        doc.moveDown();
+        // Header - Company Details
+        doc.fillColor('#3e2723').fontSize(24).font('Helvetica-Bold').text('G Kastha Living', 50, 50);
+        doc.fillColor('#555555').fontSize(10).font('Helvetica')
+           .text('Kathmandu, Nepal', 50, 80)
+           .text('Phone: +977-1234567890', 50, 95)
+           .text('Email: info@gkastha.com.np', 50, 110);
 
-        doc.fontSize(12).text(`Order ID: #${order.id}`);
-        doc.text(`Date: ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}`);
-        doc.text(`Status: ${order.status.toUpperCase()}`);
-        doc.text(`Payment Method: ${order.paymentMethod.toUpperCase()}`);
+        // Header - Invoice Details (Right Aligned)
+        doc.fillColor('#3e2723').fontSize(20).font('Helvetica-Bold').text('INVOICE', 400, 50, { align: 'right' });
+        
+        doc.fillColor('#555555').fontSize(10).font('Helvetica');
+        doc.text(`Invoice No: ${formattedOrderId}`, 400, 80, { align: 'right' });
+        doc.text(`Date: ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}`, 400, 95, { align: 'right' });
+        doc.text(`Status: ${order.status.toUpperCase()}`, 400, 110, { align: 'right' });
 
-        doc.moveDown();
-        doc.text(`Customer Name: ${order.user?.name || 'Guest'}`);
-        doc.text(`Shipping Address: ${order.address}`);
+        doc.moveDown(3);
+
+        // Billing To
+        doc.fillColor('#3e2723').fontSize(12).font('Helvetica-Bold').text('Bill To:', 50, 150);
+        doc.fillColor('#000000').fontSize(10).font('Helvetica')
+           .text(order.user?.name || 'Guest', 50, 165)
+           .text(order.address, 50, 180, { width: 250 })
+           .text(`Payment Method: ${order.paymentMethod.toUpperCase()}`, 50, 210);
+
         doc.moveDown(2);
 
-        // Line items Header
-        doc.fontSize(12).font('Helvetica-Bold');
-        doc.text('Item', 50, doc.y, { continued: true });
-        doc.text('Qty', 350, doc.y, { continued: true });
-        doc.text('Price', 400, doc.y, { continued: true });
-        doc.text('Total', 480, doc.y);
-        doc.moveDown(0.5);
+        // Table Drawing Function Helpers
+        const generateHr = (y: number) => {
+            doc.strokeColor('#dddddd').lineWidth(1).moveTo(50, y).lineTo(550, y).stroke();
+        };
 
-        // Line Items
-        doc.font('Helvetica');
-        let currentY = doc.y;
+        let invoiceTableTop = 250;
+
+        // Table Header
+        doc.font('Helvetica-Bold').fillColor('#3e2723');
+        generateHr(invoiceTableTop);
+        doc.text('Item Description', 50, invoiceTableTop + 10);
+        doc.text('Qty', 350, invoiceTableTop + 10, { width: 50, align: 'center' });
+        doc.text('Unit Price', 400, invoiceTableTop + 10, { width: 70, align: 'right' });
+        doc.text('Total', 480, invoiceTableTop + 10, { width: 70, align: 'right' });
+        generateHr(invoiceTableTop + 25);
+
+        // Table Content
+        doc.font('Helvetica').fillColor('#000000');
+        let currentY = invoiceTableTop + 35;
 
         for (const item of order.items) {
             const productName = item.product?.name || `Product #${item.productId}`;
@@ -221,19 +248,32 @@ export class OrdersService {
             const lineTotal = qty * price;
 
             doc.text(productName, 50, currentY, { width: 280 });
-            doc.text(String(qty), 350, currentY, { width: 50 });
-            doc.text(`Rs. ${price.toFixed(2)}`, 400, currentY, { width: 80 });
-            doc.text(`Rs. ${lineTotal.toFixed(2)}`, 480, currentY);
+            doc.text(String(qty), 350, currentY, { width: 50, align: 'center' });
+            doc.text(`Rs. ${price.toFixed(2)}`, 400, currentY, { width: 70, align: 'right' });
+            doc.text(`Rs. ${lineTotal.toFixed(2)}`, 480, currentY, { width: 70, align: 'right' });
 
-            // Move Y down for next item, accounting for multi-line product names if any
-            currentY = Math.max(doc.y, currentY + 20);
+            // Ensure spacing for multi-line items
+            const height = doc.heightOfString(productName, { width: 280 });
+            currentY += Math.max(height, 20) + 10;
+            
+            // Add a new page if we run out of space
+            if (currentY > 700) {
+                doc.addPage();
+                currentY = 50;
+            }
         }
 
-        doc.moveDown(2);
+        generateHr(currentY);
 
-        // Total
-        doc.fontSize(14).font('Helvetica-Bold');
-        doc.text(`Grand Total: Rs. ${Number(order.total).toFixed(2)}`, { align: 'right' });
+        // Totals
+        const subtotalPosition = currentY + 15;
+        doc.font('Helvetica-Bold').fontSize(12).fillColor('#3e2723');
+        doc.text('Grand Total:', 350, subtotalPosition, { width: 120, align: 'right' });
+        doc.text(`Rs. ${Number(order.total).toFixed(2)}`, 480, subtotalPosition, { width: 70, align: 'right' });
+
+        // Footer
+        doc.font('Helvetica').fontSize(10).fillColor('#aaaaaa');
+        doc.text('Thank you for shopping with G Kastha Living. We hope you enjoy your new furniture!', 50, 750, { align: 'center', width: 500 });
 
         doc.end();
     }

@@ -89,7 +89,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
                 String(activeChatUserId) === String(message.receiverId) ||
                 (isChattingWithAdmin && isFromAdmin)
             ) {
-                set((state) => ({ messages: [...state.messages, message] }));
+                set((state) => {
+                    if (state.messages.some(m => m.id === message.id)) {
+                        return state;
+                    }
+                    return { messages: [...state.messages, message] };
+                });
             } else {
                 // Increment unread count if it's from someone else
                 set((state) => ({ unreadCount: state.unreadCount + 1 }));
@@ -98,7 +103,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         newSocket.on('messageSent', (message: ChatMessage) => {
             // Message successfully sent and stored in DB
-            set((state) => ({ messages: [...state.messages, message] }));
+            set((state) => {
+                // Prevent duplicate if 'newMessage' broadcast already added it
+                if (state.messages.some(m => m.id === message.id)) {
+                    return state;
+                }
+                return { messages: [...state.messages, message] };
+            });
         });
     },
 
