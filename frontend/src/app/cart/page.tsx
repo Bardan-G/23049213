@@ -34,7 +34,7 @@ export default function CartPage() {
                 <h3 className="text-xl font-bold">{item.name}</h3>
                 <p className="text-[#3e2723] font-bold">Rs. {item.price}</p>
               </div>
-              <div className="flex items-center gap-4 bg-slate-300 p-2 rounded-lg border border-slate-700">
+              <div className="flex items-center gap-4 bg-slate-300 p-2 rounded-lg border border-amber-100">
                 <button onClick={() => handleDecrease(item)} className="px-2 hover:text-red-500 text-xl">-</button>
                 <span className="font-bold w-4 text-center">{item.quantity}</span>
                 <button onClick={() => addToCart(item)} className="px-2 hover:text-emerald-500 text-xl">+</button>
@@ -45,9 +45,9 @@ export default function CartPage() {
           ))}
         </div>
 
-        <div className="bg-slate-300 mt-10 p-10 rounded-2xl h-full border border-t-gray-700">
+        <div className="bg-slate-300 mt-10 p-10 rounded-2xl h-full border border-amber-100">
           <h2 className="text-2xl font-bold mb-6">Summary</h2>
-          <div className="flex justify-between text-xl font-bold border-t border-t-gray-700 pt-4">
+          <div className="flex justify-between text-xl font-bold border-t border-t-amber-100 pt-4">
             <span>Total</span>
             <span>Rs. {totalPrice().toFixed(2)}</span>
           </div>

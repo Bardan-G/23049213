@@ -63,48 +63,48 @@ export default function CheckoutPage() {
         }
     };
 
-    const initiateKhalti = (orderId: number) => {
-        const config = {
-            "publicKey": "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
-            "productIdentity": "order_" + orderId,
-            "productName": "Furniture Order #" + orderId,
-            "productUrl": window.location.origin,
-            "eventHandler": {
-                async onSuccess(payload: any) {
-                    console.log("Khalti Success:", payload);
-                    try {
-                        await api.post('/orders/verify-khalti', { orderId, payload }, {
-                            headers: { Authorization: `Bearer ${session?.accessToken}` }
-                        });
-                        clearCart();
-                        router.push('/orders/success');
-                    } catch (err) {
-                        alert("Failed to verify Khalti payment.");
-                        setLoading(false);
-                    }
-                },
-                onError(error: any) {
-                    console.log(error);
-                    alert("Payment Failed");
-                    setLoading(false);
-                },
-                onClose() {
-                    console.log('widget is closing');
-                    setLoading(false);
-                }
-            }
-        };
+    // const initiateKhalti = (orderId: number) => {
+    //     const config = {
+    //         "publicKey": "test_public_key_dc74e0fd57cb46cd93832aee0a390234",
+    //         "productIdentity": "order_" + orderId,
+    //         "productName": "Furniture Order #" + orderId,
+    //         "productUrl": window.location.origin,
+    //         "eventHandler": {
+    //             async onSuccess(payload: any) {
+    //                 console.log("Khalti Success:", payload);
+    //                 try {
+    //                     await api.post('/orders/verify-khalti', { orderId, payload }, {
+    //                         headers: { Authorization: `Bearer ${session?.accessToken}` }
+    //                     });
+    //                     clearCart();
+    //                     router.push('/orders/success');
+    //                 } catch (err) {
+    //                     alert("Failed to verify Khalti payment.");
+    //                     setLoading(false);
+    //                 }
+    //             },
+    //             onError(error: any) {
+    //                 console.log(error);
+    //                 alert("Payment Failed");
+    //                 setLoading(false);
+    //             },
+    //             onClose() {
+    //                 console.log('widget is closing');
+    //                 setLoading(false);
+    //             }
+    //         }
+    //     };
 
-        try {
-            // @ts-ignore
-            const checkout = new KhaltiCheckout(config);
-            checkout.show({ amount: totalPrice() * 100 }); // Amount in paisa
-        } catch (err) {
-            alert("Khalti script not loaded.");
-            console.error(err);
-            setLoading(false);
-        }
-    };
+    //     try {
+    //         // @ts-ignore
+    //         const checkout = new KhaltiCheckout(config);
+    //         checkout.show({ amount: totalPrice() * 100 }); // Amount in paisa
+    //     } catch (err) {
+    //         alert("Khalti script not loaded.");
+    //         console.error(err);
+    //         setLoading(false);
+    //     }
+    // };
 
     const initiateEsewa = async (orderId: number) => {
         const total_amount = totalPrice();
